@@ -1,0 +1,13 @@
+__pycache__
+app.egg-info
+
+*.pyc
+*__pycache__
+
+.pytest_cache
+.idea
+.coverage
+.cache
+.venv
+.env
+.DS_Store

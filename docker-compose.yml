@@ -1,0 +1,54 @@
+version: '3'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - .:/app
+      - .env:/app/library_app/.env
+    depends_on:
+      - redis
+      - worker
+      - beat
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A app.tasks.celery_app worker --loglevel=INFO
+    depends_on:
+      - redis
+
+  beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A app.tasks.celery_app beat --loglevel=INFO
+    depends_on:
+      - redis
+
+  library-db:
+    image: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    container_name: library-db
+    environment:
+      POSTGRES_HOST: library-db
+      POSTGRES_DB: library
+      POSTGRES_PASSWORD: library
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
